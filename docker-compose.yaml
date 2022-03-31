@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  client-api:
+    build:
+      context: .
+      target: clientAPI
+    ports:
+      - "8000:5000"
+    depends_on:
+      - port-domain-server
+    container_name: clientapi_1
+  port-domain-server:
+    build:
+      context: .
+      target: portDomainService
+    ports:
+      - "8001:5000"
+    container_name: portdomainserver_1
+  mongodb:
+      image: mongo:5.0
+      ports:
+        - 27017:27017
+      container_name: mongodb_1
+      # ENABLE TO HIDE MONGODB LOGS FROM DOCKER-COMPOSE STREAM
+      # This logs mongodb logs to file instead of console
+      command:
+        - '--logpath'
+        - '/var/log/mongodb/mongod.log'
