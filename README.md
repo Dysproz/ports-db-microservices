@@ -21,6 +21,8 @@ portDomainService handles gRPC requests from clientAPI and make requests to mong
 docker-compose builds clientAPI and portDomainService containers from Go code packages.
 
 `docker-compose build`
+or simply:
+`make build`
 
 ## Create all containers
 docker-compose creates a clientAPI, portDomainService and mongoDB containers that have a fixed domain name (used to handle static networking instead of looking fo dynamic IP each time). Containers communitate between each other and also clientAPI REST API is reachable from localhost.
@@ -28,6 +30,9 @@ docker-compose creates a clientAPI, portDomainService and mongoDB containers tha
 `docker-compose up`
 
 **NOTE:** When editing the code add `--force-recreate` flag to make sure that docker-compose uses the latest version of containers
+
+or simply:
+`make run`
 
 ## Post ports file via REST interface
 This command is an example of using clientAPI REST API for loading ports data from JSON file.
