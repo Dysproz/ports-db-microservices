@@ -16,6 +16,7 @@ portDomainService handles gRPC requests from clientAPI and make requests to mong
 ![architecture](images/architecture.png)
 ![flow](images/flow.png)
 
+**NOTE:** Hexagonal architecture made as described in [this](https://medium.com/@matiasvarela/hexagonal-architecture-in-go-cfd4e436faa3) article.
 
 ## Build the containers
 docker-compose builds clientAPI and portDomainService containers from Go code packages.
