@@ -4,6 +4,9 @@
 - docker (tested on 20.10.13)
 - docker-compose (tested on v2.3.3)
 - curl (tested on 7.79.1)
+- protobuf (`brew install protobuf`)
+- protoc-gen-go (`brew install protoc-gen-go`)
+- protoc-gen-go-grpc (`brew install protoc-gen-go-grpc`)
 
 ## Idea
 Project contains two microservices made with Go.
@@ -17,6 +20,11 @@ portDomainService handles gRPC requests from clientAPI and make requests to mong
 ![flow](images/flow.png)
 
 **NOTE:** Hexagonal architecture made as described in [this](https://medium.com/@matiasvarela/hexagonal-architecture-in-go-cfd4e436faa3) article.
+
+## Protoc generate
+```
+protoc --go_out=pkg/portsprotocol --go_opt=paths=source_relative --go-grpc_out=pkg/portsprotocol --go-grpc_opt=paths=source_relative ./pkg/portsprotocol/ports.proto
+```
 
 ## Build the containers
 docker-compose builds clientAPI and portDomainService containers from Go code packages.

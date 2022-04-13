@@ -11,12 +11,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
+	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
 )
 
 type portDB struct {
 	Key  string      `bson:"key"`
-	Port domain.Port `bson:"port"`
+	Port pb.Port `bson:"port"`
 }
 
 type mongoClient struct {
@@ -46,7 +46,7 @@ func NewMongoClient(address string) (*mongoClient, error) {
 }
 
 // InsertOrUpdate checks if key already exists and replaces entry or inserts a new one
-func (m *mongoClient) InsertOrUpdate(key string, port domain.Port) error {
+func (m *mongoClient) InsertOrUpdate(key string, port pb.Port) error {
 	filter := bson.D{{"key", key}}
 	portEntry := portDB{
 		Key:  key,
@@ -66,13 +66,13 @@ func (m *mongoClient) InsertOrUpdate(key string, port domain.Port) error {
 }
 
 // Get gets from database port data by passed key
-func (m *mongoClient) Get(key string) (domain.Port, error) {
+func (m *mongoClient) Get(key string) (pb.Port, error) {
 	var port portDB
 	filter := bson.D{{"key", key}}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	if err := m.Collection.FindOne(ctx, filter).Decode(&port); err != nil {
 		log.Debug("Get port for key: ", key, " failed with error: ", err)
-		return domain.Port{}, err
+		return pb.Port{}, err
 	}
 	log.Debug("Found port for key: ", key, " with data: ", port)
 	return port.Port, nil

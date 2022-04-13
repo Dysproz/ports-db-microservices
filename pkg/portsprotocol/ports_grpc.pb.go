@@ -36,7 +36,7 @@ func NewPortServiceClient(cc grpc.ClientConnInterface) PortServiceClient {
 
 func (c *portServiceClient) CreateOrUpdatePort(ctx context.Context, in *CreateOrUpdatePortRequest, opts ...grpc.CallOption) (*CreateOrUpdatePortResponse, error) {
 	out := new(CreateOrUpdatePortResponse)
-	err := c.cc.Invoke(ctx, "/portsprotocol.PortService/CreateOrUpdatePort", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/PortService/CreateOrUpdatePort", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *portServiceClient) CreateOrUpdatePort(ctx context.Context, in *CreateOr
 
 func (c *portServiceClient) GetPort(ctx context.Context, in *GetPortRequest, opts ...grpc.CallOption) (*GetPortResponse, error) {
 	out := new(GetPortResponse)
-	err := c.cc.Invoke(ctx, "/portsprotocol.PortService/GetPort", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/PortService/GetPort", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func _PortService_CreateOrUpdatePort_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/portsprotocol.PortService/CreateOrUpdatePort",
+		FullMethod: "/PortService/CreateOrUpdatePort",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PortServiceServer).CreateOrUpdatePort(ctx, req.(*CreateOrUpdatePortRequest))
@@ -112,7 +112,7 @@ func _PortService_GetPort_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/portsprotocol.PortService/GetPort",
+		FullMethod: "/PortService/GetPort",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PortServiceServer).GetPort(ctx, req.(*GetPortRequest))
@@ -124,7 +124,7 @@ func _PortService_GetPort_Handler(srv interface{}, ctx context.Context, dec func
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var PortService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "portsprotocol.PortService",
+	ServiceName: "PortService",
 	HandlerType: (*PortServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
