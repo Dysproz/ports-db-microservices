@@ -19,6 +19,8 @@ portDomainService handles gRPC requests from clientAPI and make requests to mong
 ![architecture](images/architecture.png)
 ![flow](images/flow.png)
 
+Hexagonal architecture of microservices:
+![hex-architecture](images/hex-architecture.png)
 **NOTE:** Hexagonal architecture made as described in [this](https://medium.com/@matiasvarela/hexagonal-architecture-in-go-cfd4e436faa3) article.
 
 ## Protoc generate
