@@ -25,7 +25,7 @@ Hexagonal architecture of microservices:
 
 ## Protoc generate
 ```
-protoc --go_out=pkg/portsprotocol --go_opt=paths=source_relative --go-grpc_out=pkg/portsprotocol --go-grpc_opt=paths=source_relative ./pkg/portsprotocol/ports.proto
+protoc --go_out=internal/core/services/portsprotocol --go_opt=paths=source_relative --go-grpc_out=internal/core/services/portsprotocol --go-grpc_opt=paths=source_relative ports.proto
 ```
 
 ## Build the containers

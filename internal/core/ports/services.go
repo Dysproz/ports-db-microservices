@@ -1,8 +1,11 @@
 package ports
 
 import (
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+
 	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
+	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol" // TODO: geneate it to normal service and domain
 )
 type JSONParseService interface {
 	Load(path string) error
@@ -10,6 +13,6 @@ type JSONParseService interface {
 }
 
 type GRPCClientService interface {
-	CreateOrUpdatePort(key string, port pb.Port) error
-	GetPort(key string) (pb.Port, error)
+	CreateOrUpdatePort(ctx context.Context, in *pb.CreateOrUpdatePortRequest, opts ...grpc.CallOption) (*pb.CreateOrUpdatePortResponse, error)
+	GetPort(ctx context.Context, in *pb.GetPortRequest, opts ...grpc.CallOption) (*pb.GetPortResponse, error)
 }
