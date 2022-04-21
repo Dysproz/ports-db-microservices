@@ -6,5 +6,5 @@ import (
 
 type PortsRepository interface {
 	Get(key string) (domain.Port, error)
-	InsertOrUpate(domain.Port) error
+	InsertOrUpdate(string, domain.Port) error
 }

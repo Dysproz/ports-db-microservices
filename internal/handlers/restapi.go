@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"os"
-	"context"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -15,7 +15,7 @@ import (
 )
 
 type restClient struct {
-	Client ports.GRPCClientService
+	Client       ports.GRPCClientService
 	parseService ports.JSONParseService
 }
 
@@ -26,19 +26,20 @@ type portRequest struct {
 // NewRESTClient return new REST Client
 func NewRESTClient(portServiceClient ports.GRPCClientService, parseService ports.JSONParseService) *restClient {
 	return &restClient{
-		Client: portServiceClient,
+		Client:       portServiceClient,
 		parseService: parseService,
 	}
 }
 
 // HandleRequests method handles incoming HTTP requests and routes logic.
 func (c *restClient) HandleRequests() {
-	http.HandleFunc("/getPort", c.handleGetPort)
-	http.HandleFunc("/loadPorts", c.handleLoadPorts)
+	http.HandleFunc("/getPort", c.HandleGetPort)
+	http.HandleFunc("/loadPorts", c.HandleLoadPorts)
 	log.Fatal(http.ListenAndServe(":5000", nil))
 }
 
-func (c *restClient) handleGetPort(w http.ResponseWriter, r *http.Request) {
+// HandleGetPort Handles HTTP request for getting port
+func (c *restClient) HandleGetPort(w http.ResponseWriter, r *http.Request) {
 	var jsonRequest portRequest
 	if err := json.NewDecoder(r.Body).Decode(&jsonRequest); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -67,10 +68,10 @@ func (c *restClient) handleGetPort(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
-func (c *restClient) handleLoadPorts(w http.ResponseWriter, r *http.Request) {
+// HandleLoadPorts handles HTTP requests to load ports from file
+func (c *restClient) HandleLoadPorts(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Got loadPorts request")
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {

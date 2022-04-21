@@ -1,4 +1,4 @@
-package resthandler_test
+package handlers_test
 
 import (
 	"bytes"
@@ -7,18 +7,18 @@ import (
 
 	"testing"
 
-	"github.com/Dysproz/ports-db-microservices/pkg/jsonparser"
-	"github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
-	"github.com/Dysproz/ports-db-microservices/pkg/resthandler"
+	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
+	jsonparser "github.com/Dysproz/ports-db-microservices/internal/core/services/jsonparse"
+	"github.com/Dysproz/ports-db-microservices/internal/core/services/portsprotocol"
+	"github.com/Dysproz/ports-db-microservices/internal/handlers"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestHandleGetPort(t *testing.T) {
-	client := resthandler.RESTClient{
-		Client: portsprotocol.NewFakePortServiceClient(),
-		Stream: jsonparser.NewJSONStream(),
-	}
+	client := handlers.NewRESTClient(
+		portsprotocol.NewFakePortServiceClient(),
+		jsonparser.NewStream(),
+	)
 	var jsonPayload = []byte(`{"key":"fakePort"}`)
 	req := httptest.NewRequest("POST", "http://example.com/getPort", bytes.NewBuffer(jsonPayload))
 	req.Header.Set("Content-Type", "application/json")
@@ -28,7 +28,7 @@ func TestHandleGetPort(t *testing.T) {
 	assert.NotEqual(t, w.Code, http.StatusInternalServerError)
 }
 
-var testPort = pb.Port{
+var testPort = domain.Port{
 	Name:        "fakeName",
 	City:        "fakeCity",
 	Country:     "fakeCountry",
@@ -42,10 +42,10 @@ var testPort = pb.Port{
 }
 
 func TestHandleLoadPorts(t *testing.T) {
-	client := resthandler.RESTClient{
-		Client: portsprotocol.NewFakePortServiceClient(),
-		Stream: jsonparser.NewJSONStream(),
-	}
+	client := handlers.NewRESTClient(
+		portsprotocol.NewFakePortServiceClient(),
+		jsonparser.NewStream(),
+	)
 	req := httptest.NewRequest("POST", "http://example.com/getPort", bytes.NewBuffer([]byte{}))
 	req.Header.Set("Content-Type", "multipart/form-data")
 	w := httptest.NewRecorder()

@@ -6,8 +6,9 @@ import (
 
 	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
 )
+
 type JSONParseService interface {
-	Load(path string) error
+	Load(path string)
 	Watch() <-chan domain.Entry
 }
 

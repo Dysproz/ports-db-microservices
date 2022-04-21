@@ -10,8 +10,8 @@ import (
 
 type Entry struct {
 	Error error
-	Key string
-	Port domain.Port
+	Key   string
+	Port  domain.Port
 }
 
 type stream struct {

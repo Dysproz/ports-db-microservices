@@ -8,15 +8,14 @@ import (
 	"runtime"
 	"syscall"
 
+	"github.com/Dysproz/ports-db-microservices/internal/core/services/grpcclient"
+	jsonparser "github.com/Dysproz/ports-db-microservices/internal/core/services/jsonparse"
+	"github.com/Dysproz/ports-db-microservices/internal/core/services/portsprotocol"
+	"github.com/Dysproz/ports-db-microservices/internal/handlers"
 	log "github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
-	clientgrpc "github.com/Dysproz/ports-db-microservices/pkg/grpc"
-	"github.com/Dysproz/ports-db-microservices/pkg/jsonparser"
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
-	"github.com/Dysproz/ports-db-microservices/pkg/resthandler"
 )
 
 func main() {
@@ -34,20 +33,21 @@ func main() {
 		log.Fatalf("failed to dial: %v", err)
 	}
 	defer conn.Close()
-	client := pb.NewPortServiceClient(conn)
-	stream := jsonparser.NewJSONStream()
+	client := portsprotocol.NewPortServiceClient(conn)
+	stream := jsonparser.NewStream()
+	grpcClient := grpcclient.NewGrpcClient(client)
 	go func() {
 		for data := range stream.Watch() {
 			if data.Error != nil {
 				log.Info(data.Error)
 			}
 			log.Info("creating ", data.Key, " : ", data.Port.Name)
-			if err := clientgrpc.CreateOrUpdatePort(client, data.Key, data.Port); err != nil {
+			if err := grpcClient.CreateOrUpdatePort(data.Key, data.Port); err != nil {
 				log.Fatal(err)
 			}
 		}
 	}()
-	go resthandler.HandleRequests(client, stream)
+	go handlers.NewRESTClient(client, stream).HandleRequests()
 	select {
 	case <-sigCh:
 		log.Info("Interrupt signal detected. Gracefully shutting down...")

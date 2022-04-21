@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net"
@@ -12,9 +13,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"github.com/Dysproz/ports-db-microservices/pkg/mongodb"
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
-	"github.com/Dysproz/ports-db-microservices/pkg/portsprotocolserver"
+	"github.com/Dysproz/ports-db-microservices/internal/core/services/grpcsrv"
+	"github.com/Dysproz/ports-db-microservices/internal/core/services/portsprotocol"
+	"github.com/Dysproz/ports-db-microservices/internal/repositories/portsrepo"
 )
 
 func main() {
@@ -30,15 +31,15 @@ func main() {
 		log.Fatal(err)
 	}
 	defer lis.Close()
-	mongodbClient, err := mongodb.CreateMongoDBClient(mongodbAddress)
+	mongodbClient, err := portsrepo.NewMongoClient(mongodbAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer mongodbClient.Close()
+	defer mongodbClient.Client.Disconnect(context.Background())
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 	defer grpcServer.GracefulStop()
-	pb.RegisterPortServiceServer(grpcServer, newServer(mongodbClient))
+	portsprotocol.RegisterPortServiceServer(grpcServer, grpcsrv.NewPortsProtocolServer(mongodbClient))
 	if err = grpcServer.Serve(lis); err != nil {
 		log.Fatal(err)
 	}
@@ -47,13 +48,6 @@ func main() {
 		log.Info("Interrupt signal detected. Gracefully shutting down...")
 		runtime.Goexit()
 	}
-}
-
-func newServer(mongo mongodb.MongoClient) *portsprotocolserver.PortsProtocolServer {
-	s := &portsprotocolserver.PortsProtocolServer{
-		MongoDB: mongo,
-	}
-	return s
 }
 
 func getParameters() (int, string, error) {
