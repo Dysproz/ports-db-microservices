@@ -7,14 +7,14 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
-	"github.com/Dysproz/ports-db-microservices/internal/core/services/portsprotocol"
+	"github.com/Dysproz/ports-db-microservices/internal/core/ports"
 )
 
 type grpcClient struct {
-	client portsprotocol.PortServiceClient
+	client ports.GRPCClientService
 }
 
-func NewGrpcClient(client portsprotocol.PortServiceClient) *grpcClient {
+func NewGrpcClient(client ports.GRPCClientService) *grpcClient {
 	return &grpcClient{client: client}
 }
 
