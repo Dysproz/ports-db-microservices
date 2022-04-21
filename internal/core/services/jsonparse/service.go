@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"os"
 
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
 	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
 )
 
 type Entry struct {
 	Error error
 	Key string
-	Port pb.Port
+	Port domain.Port
 }
 
 type stream struct {
@@ -55,7 +54,7 @@ func (s stream) Load(path string) {
 		}
 		key := t.(string)
 
-		var port pb.Port
+		var port domain.Port
 		if err := decoder.Decode(&port); err != nil {
 			s.stream <- domain.Entry{Error: fmt.Errorf("decode: %w", err)}
 			return

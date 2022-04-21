@@ -6,23 +6,24 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
+	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
+	"github.com/Dysproz/ports-db-microservices/internal/core/ports"
 )
 
 type grpcClient struct {
-	client pb.PortServiceClient
+	client ports.GRPCClientService
 }
 
-func NewGrpcClient(client pb.PortServiceClient) *grpcClient {
+func NewGrpcClient(client ports.GRPCClientService) *grpcClient {
 	return &grpcClient{client: client}
 }
 
 // CreateOrUpdatePort handles grpc requests for creating or upating port entry in portDomainService
-func (c *grpcClient) CreateOrUpdatePort(key string, port pb.Port) error {
+func (c *grpcClient) CreateOrUpdatePort(key string, port domain.Port) error {
 	log.Println("CreateOrUpdate ", key, " port")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	_, err := c.client.CreateOrUpdatePort(ctx, &pb.CreateOrUpdatePortRequest{
+	_, err := c.client.CreateOrUpdatePort(ctx, &domain.CreateOrUpdatePortRequest{
 		Key:  key,
 		Port: &port,
 	})
@@ -30,15 +31,15 @@ func (c *grpcClient) CreateOrUpdatePort(key string, port pb.Port) error {
 }
 
 // GetPort handles grpc requests for gathering port data from portDomainService
-func (c *grpcClient) GetPort(key string) (pb.Port, error) {
+func (c *grpcClient) GetPort(key string) (domain.Port, error) {
 	log.Println("GetPort  ", key, " port")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	response, err := c.client.GetPort(ctx, &pb.GetPortRequest{
+	response, err := c.client.GetPort(ctx, &domain.GetPortRequest{
 		Key: key,
 	})
 	if err != nil {
-		return pb.Port{}, err
+		return domain.Port{}, err
 	}
 	return *response.Port, nil
 }

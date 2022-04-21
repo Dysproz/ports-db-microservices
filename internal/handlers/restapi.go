@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol" // TODO: move portsprotocol to separate service
+	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
 	"github.com/Dysproz/ports-db-microservices/internal/core/ports"
 )
 
@@ -45,7 +45,7 @@ func (c *restClient) handleGetPort(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Debug("Got getPort request for key: ", jsonRequest.Key)
-	retrievedPort, err := c.Client.GetPort(context.Background(), &pb.GetPortRequest{
+	retrievedPort, err := c.Client.GetPort(context.Background(), &domain.GetPortRequest{
 		Key: jsonRequest.Key,
 	})
 	if err != nil {

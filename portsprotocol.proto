@@ -1,0 +1,9 @@
+syntax = "proto3";
+package portsprotocol;
+option go_package = "github.com/Dysproz/ports-db-microservices/internal/core/services/portsprotocol";
+import "domain.proto";
+
+service PortService {
+  rpc CreateOrUpdatePort(domain.CreateOrUpdatePortRequest) returns (domain.CreateOrUpdatePortResponse) {}
+  rpc GetPort(domain.GetPortRequest) returns (domain.GetPortResponse) {}
+}

@@ -1,10 +1,10 @@
 package ports
 
 import (
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
+	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
 )
 
 type PortsRepository interface {
-	Get(key string) (pb.Port, error)
-	InsertOrUpate(pb.Port) error
+	Get(key string) (domain.Port, error)
+	InsertOrUpate(domain.Port) error
 }
