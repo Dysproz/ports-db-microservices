@@ -1,11 +1,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
 
 	"github.com/Dysproz/ports-db-microservices/internal/core/services/grpcclient"
@@ -19,13 +19,24 @@ import (
 )
 
 func main() {
-	defer os.Exit(0)
-	sigCh := make(chan os.Signal)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	defer func() {
+		log.Info("ClientAPI fully stopped")
+		os.Exit(0)
+	}()
+
 	domainServerPort, serverAddress, err := getParameters()
 	serverAddr := fmt.Sprintf("%v:%d", serverAddress, domainServerPort)
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	sigCh := make(chan os.Signal)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		oscall := <-sigCh
+		log.Printf("system call:%+v", oscall)
+		cancel()
+	}()
 
 	log.Info("Dialing ", serverAddr, "...")
 	conn, err := grpc.Dial(serverAddr, opts...)
@@ -36,23 +47,26 @@ func main() {
 	client := portsprotocol.NewPortServiceClient(conn)
 	stream := jsonparser.NewStream()
 	grpcClient := grpcclient.NewGrpcClient(client)
-	go func() {
-		for data := range stream.Watch() {
-			if data.Error != nil {
-				log.Info(data.Error)
-			}
-			log.Info("creating ", data.Key, " : ", data.Port.Name)
-			if err := grpcClient.CreateOrUpdatePort(data.Key, data.Port); err != nil {
-				log.Fatal(err)
-			}
-		}
-	}()
+
+	go watchJSONStream(ctx, stream, grpcClient)
 	go handlers.NewRESTClient(client, stream).HandleRequests()
-	select {
-	case <-sigCh:
-		log.Info("Interrupt signal detected. Gracefully shutting down...")
-		runtime.Goexit()
+	<-ctx.Done()
+	log.Info("Stopping JSON stream")
+}
+
+func watchJSONStream(ctx context.Context, stream *jsonparser.Stream, grpcClient *grpcclient.GrpcClient) error {
+	for data := range stream.Watch() {
+		if data.Error != nil {
+			log.Fatal(data.Error)
+			return data.Error
+		}
+		log.Info("creating ", data.Key, " : ", data.Port.Name)
+		if err := grpcClient.CreateOrUpdatePort(data.Key, data.Port); err != nil {
+			log.Fatal(err)
+			return err
+		}
 	}
+	return nil
 }
 
 func getParameters() (int, string, error) {

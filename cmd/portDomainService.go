@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
@@ -19,13 +18,25 @@ import (
 )
 
 func main() {
-	defer os.Exit(0)
-	sigCh := make(chan os.Signal)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	defer func() {
+		log.Info("Port Domain Service fully stopped")
+		os.Exit(0)
+	}()
+
 	port, mongodbAddress, err := getParameters()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	sigCh := make(chan os.Signal)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		oscall := <-sigCh
+		log.Printf("system call:%+v", oscall)
+		cancel()
+	}()
+
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatal(err)
@@ -40,14 +51,13 @@ func main() {
 	grpcServer := grpc.NewServer(opts...)
 	defer grpcServer.GracefulStop()
 	portsprotocol.RegisterPortServiceServer(grpcServer, grpcsrv.NewPortsProtocolServer(mongodbClient))
-	if err = grpcServer.Serve(lis); err != nil {
-		log.Fatal(err)
-	}
-	select {
-	case <-sigCh:
-		log.Info("Interrupt signal detected. Gracefully shutting down...")
-		runtime.Goexit()
-	}
+	go func() {
+		if err = grpcServer.Serve(lis); err != nil {
+			log.Fatal(err)
+		}
+	}()
+	<-ctx.Done()
+	log.Info("Stopping Port Domain Service")
 }
 
 func getParameters() (int, string, error) {

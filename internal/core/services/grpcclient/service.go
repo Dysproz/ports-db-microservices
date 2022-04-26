@@ -10,16 +10,18 @@ import (
 	"github.com/Dysproz/ports-db-microservices/internal/core/ports"
 )
 
-type grpcClient struct {
+// GrpcClient is a client handling gRPC requests
+type GrpcClient struct {
 	client ports.GRPCClientService
 }
 
-func NewGrpcClient(client ports.GRPCClientService) *grpcClient {
-	return &grpcClient{client: client}
+// NewGrpcClient returns a new GrpcClient
+func NewGrpcClient(client ports.GRPCClientService) *GrpcClient {
+	return &GrpcClient{client: client}
 }
 
 // CreateOrUpdatePort handles grpc requests for creating or upating port entry in portDomainService
-func (c *grpcClient) CreateOrUpdatePort(key string, port domain.Port) error {
+func (c *GrpcClient) CreateOrUpdatePort(key string, port domain.Port) error {
 	log.Println("CreateOrUpdate ", key, " port")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -31,7 +33,7 @@ func (c *grpcClient) CreateOrUpdatePort(key string, port domain.Port) error {
 }
 
 // GetPort handles grpc requests for gathering port data from portDomainService
-func (c *grpcClient) GetPort(key string) (domain.Port, error) {
+func (c *GrpcClient) GetPort(key string) (domain.Port, error) {
 	log.Println("GetPort  ", key, " port")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

@@ -8,25 +8,27 @@ import (
 	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
 )
 
+// Entry is a single JSON data in stream
 type Entry struct {
 	Error error
 	Key   string
 	Port  domain.Port
 }
 
-type stream struct {
+// Stream is a JSON data stream
+type Stream struct {
 	stream chan domain.Entry
 }
 
 // NewStream return new JSON stream
-func NewStream() *stream {
-	return &stream{
+func NewStream() *Stream {
+	return &Stream{
 		stream: make(chan domain.Entry),
 	}
 }
 
 // Load reads JSON file in stream
-func (s stream) Load(path string) {
+func (s Stream) Load(path string) {
 	file, err := os.Open(path)
 	if err != nil {
 		s.stream <- domain.Entry{Error: fmt.Errorf("open file: %w", err)}
@@ -65,6 +67,6 @@ func (s stream) Load(path string) {
 }
 
 // Watch watches for stream entries
-func (s stream) Watch() <-chan domain.Entry {
+func (s Stream) Watch() <-chan domain.Entry {
 	return s.stream
 }
