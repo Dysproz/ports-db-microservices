@@ -20,13 +20,7 @@ import (
 func main() {
 	defer func() {
 		log.Info("Port Domain Service fully stopped")
-		os.Exit(0)
 	}()
-
-	port, mongodbAddress, err := getParameters()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	sigCh := make(chan os.Signal)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
@@ -37,14 +31,22 @@ func main() {
 		cancel()
 	}()
 
+	port, mongodbAddress, err := getParameters()
+	if err != nil {
+		log.Error(err)
+		cancel()
+	}
+
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		cancel()
 	}
 	defer lis.Close()
 	mongodbClient, err := portsrepo.NewMongoClient(mongodbAddress)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		cancel()
 	}
 	defer mongodbClient.Client.Disconnect(context.Background())
 	var opts []grpc.ServerOption
@@ -53,7 +55,8 @@ func main() {
 	portsprotocol.RegisterPortServiceServer(grpcServer, grpcsrv.NewPortsProtocolServer(mongodbClient))
 	go func() {
 		if err = grpcServer.Serve(lis); err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			cancel()
 		}
 	}()
 	<-ctx.Done()

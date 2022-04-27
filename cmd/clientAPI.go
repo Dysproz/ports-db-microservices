@@ -21,7 +21,6 @@ import (
 func main() {
 	defer func() {
 		log.Info("ClientAPI fully stopped")
-		os.Exit(0)
 	}()
 
 	domainServerPort, serverAddress, err := getParameters()
@@ -41,29 +40,30 @@ func main() {
 	log.Info("Dialing ", serverAddr, "...")
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
-		log.Fatalf("failed to dial: %v", err)
+		log.Error("failed to dial: %v", err)
+		cancel()
 	}
 	defer conn.Close()
 	client := portsprotocol.NewPortServiceClient(conn)
 	stream := jsonparser.NewStream()
 	grpcClient := grpcclient.NewGrpcClient(client)
 
-	go watchJSONStream(ctx, stream, grpcClient)
-	go handlers.NewRESTClient(client, stream).HandleRequests()
+	go watchJSONStream(cancel, stream, grpcClient)
+	go handlers.NewRESTClient(client, stream).HandleRequests(cancel)
 	<-ctx.Done()
 	log.Info("Stopping JSON stream")
 }
 
-func watchJSONStream(ctx context.Context, stream *jsonparser.Stream, grpcClient *grpcclient.GrpcClient) error {
+func watchJSONStream(cancel context.CancelFunc, stream *jsonparser.Stream, grpcClient *grpcclient.GrpcClient) error {
 	for data := range stream.Watch() {
 		if data.Error != nil {
-			log.Fatal(data.Error)
-			return data.Error
+			log.Error(data.Error)
+			cancel()
 		}
 		log.Info("creating ", data.Key, " : ", data.Port.Name)
 		if err := grpcClient.CreateOrUpdatePort(data.Key, data.Port); err != nil {
-			log.Fatal(err)
-			return err
+			log.Error(err)
+			cancel()
 		}
 	}
 	return nil
