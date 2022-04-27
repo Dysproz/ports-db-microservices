@@ -44,8 +44,7 @@ func (c *fakePortServiceClient) GetPort(ctx context.Context, in *domain.GetPortR
 		return &domain.GetPortResponse{
 			Port: &FakePort,
 		}, nil
-	} else {
-		log.Info("Returning empty fakePort.")
-		return &domain.GetPortResponse{}, errors.New("Port does not exist")
 	}
+	log.Info("Returning empty fakePort.")
+	return &domain.GetPortResponse{}, errors.New("Port does not exist")
 }
