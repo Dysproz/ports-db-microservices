@@ -19,34 +19,35 @@ type portDB struct {
 	Port domain.Port `bson:"port"`
 }
 
-type mongoClient struct {
+// MongoClient is a mongoDB client
+type MongoClient struct {
 	Client     *mongo.Client
 	Collection *mongo.Collection
 }
 
 // NewMongoClient returns a mongoDB client with connection opened at specified address
-func NewMongoClient(address string) (*mongoClient, error) {
+func NewMongoClient(address string) (*MongoClient, error) {
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%v", address))
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		return &mongoClient{}, err
+		return &MongoClient{}, err
 	}
 
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {
-		return &mongoClient{}, err
+		return &MongoClient{}, err
 	}
 	log.Info("Connected to MongoDB at ", address)
 	collection := client.Database("port").Collection("port")
 
-	return &mongoClient{
+	return &MongoClient{
 		Client:     client,
 		Collection: collection,
 	}, nil
 }
 
 // InsertOrUpdate checks if key already exists and replaces entry or inserts a new one
-func (m *mongoClient) InsertOrUpdate(key string, port domain.Port) error {
+func (m *MongoClient) InsertOrUpdate(key string, port domain.Port) error {
 	filter := bson.D{{"key", key}}
 	portEntry := portDB{
 		Key:  key,
@@ -66,7 +67,7 @@ func (m *mongoClient) InsertOrUpdate(key string, port domain.Port) error {
 }
 
 // Get gets from database port data by passed key
-func (m *mongoClient) Get(key string) (domain.Port, error) {
+func (m *MongoClient) Get(key string) (domain.Port, error) {
 	var port portDB
 	filter := bson.D{{"key", key}}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)

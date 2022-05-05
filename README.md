@@ -28,6 +28,9 @@ Hexagonal architecture of microservices:
 protoc --go_out=. --go_opt=module=github.com/Dysproz/ports-db-microservices --go-grpc_out=. --go-grpc_opt=module=github.com/Dysproz/ports-db-microservices *.proto
 ```
 
+or simply
+`make protogen`
+
 ## Build the containers
 docker-compose builds clientAPI and portDomainService containers from Go code packages.
 
@@ -40,6 +43,9 @@ docker-compose creates a clientAPI, portDomainService and mongoDB containers tha
 
 `docker-compose up`
 
+or simply
+`make up`
+
 **NOTE:** When editing the code add `--force-recreate` flag to make sure that docker-compose uses the latest version of containers
 
 or simply:
@@ -50,7 +56,13 @@ This command is an example of using clientAPI REST API for loading ports data fr
 
 `curl -F file=@ports.json 'http://127.0.0.1:8000/loadPorts'`
 
+or simply:
+`make loda-ports`
+
 ## Getting port via REST interface
 This command is an example of gathering port data using clientAPI REST API. (`ZWUTA` is an example key from ports.json test file attached in this repo. Feel free to use any other key.)
 
 `curl -X POST -H "Content-Type: application/json" -d '{"key": "ZWUTA"}'  'http://127.0.0.1:8000/getPort'`
+
+or simply
+`make get key=ZWUTA`
