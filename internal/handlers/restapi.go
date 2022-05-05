@@ -33,7 +33,7 @@ func NewRESTClient(portServiceClient ports.GRPCClientService, parseService ports
 }
 
 // HandleRequests method handles incoming HTTP requests and routes logic.
-func (c *restClient) HandleRequests(cancel context.CancelFunc) {
+func (c *RestClient) HandleRequests(cancel context.CancelFunc) {
 	http.HandleFunc("/getPort", c.HandleGetPort)
 	http.HandleFunc("/loadPorts", c.HandleLoadPorts)
 	log.Error(http.ListenAndServe(":5000", nil))

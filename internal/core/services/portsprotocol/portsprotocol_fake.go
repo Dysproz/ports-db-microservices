@@ -9,6 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
+// FakePorts is a set of fake ports used for tests
 var FakePorts = map[string]*domain.Port{
 	"fakePort": {
 		Name:        "fakeName",
