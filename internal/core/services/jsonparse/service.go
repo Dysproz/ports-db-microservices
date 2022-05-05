@@ -8,14 +8,7 @@ import (
 	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
 )
 
-// Entry is a single JSON data in stream
-type Entry struct {
-	Error error
-	Key   string
-	Port  domain.Port
-}
-
-// Stream is a JSON data stream
+// Stream is a JSON stream
 type Stream struct {
 	stream chan domain.Entry
 }
