@@ -1,58 +1,63 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-
-	clientgrpc "github.com/Dysproz/ports-db-microservices/pkg/grpc"
-	"github.com/Dysproz/ports-db-microservices/pkg/jsonparser"
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
-	"github.com/Dysproz/ports-db-microservices/pkg/resthandler"
+	"github.com/Dysproz/ports-db-microservices/internal/datainput"
+	"github.com/Dysproz/ports-db-microservices/internal/grpc"
+	"github.com/Dysproz/ports-db-microservices/internal/handlers"
 )
 
 func main() {
-	defer os.Exit(0)
+	defer func() {
+		log.Info("ClientAPI fully stopped")
+	}()
 	sigCh := make(chan os.Signal)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
-	domainServerPort, serverAddress, err := getParameters()
-	serverAddr := fmt.Sprintf("%v:%d", serverAddress, domainServerPort)
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-
-	log.Info("Dialing ", serverAddr, "...")
-	conn, err := grpc.Dial(serverAddr, opts...)
-	if err != nil {
-		log.Fatalf("failed to dial: %v", err)
-	}
-	defer conn.Close()
-	client := pb.NewPortServiceClient(conn)
-	stream := jsonparser.NewJSONStream()
+	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
-		for data := range stream.Watch() {
-			if data.Error != nil {
-				log.Info(data.Error)
-			}
-			log.Info("creating ", data.Key, " : ", data.Port.Name)
-			if err := clientgrpc.CreateOrUpdatePort(client, data.Key, data.Port); err != nil {
-				log.Fatal(err)
-			}
-		}
+		oscall := <-sigCh
+		log.Error("system call:%+v", oscall)
+		cancel()
 	}()
-	go resthandler.HandleRequests(client, stream)
-	select {
-	case <-sigCh:
-		log.Info("Interrupt signal detected. Gracefully shutting down...")
-		runtime.Goexit()
+
+	domainServerPort, serverAddress, err := getParameters()
+	if err != nil {
+		log.Error(err)
+		cancel()
 	}
+	serverAddr := fmt.Sprintf("%v:%d", serverAddress, domainServerPort)
+
+	stream := datainput.NewStream()
+	Client := grpc.NewClient(serverAddr, cancel)
+	defer Client.CloseConnection()
+
+	go watchJSONStream(cancel, stream, Client)
+	go handlers.NewRESTClient(Client, stream).HandleRequests(cancel)
+	<-ctx.Done()
+	log.Info("Stopping JSON stream")
+}
+
+func watchJSONStream(cancel context.CancelFunc, stream *datainput.Stream, Client *grpc.Client) error {
+	for data := range stream.Watch() {
+		if data.Error != nil {
+			log.Error(data.Error)
+			cancel()
+		}
+		log.Info("creating ", data.Key, " : ", data.Port.Name)
+		if err := Client.CreateOrUpdatePort(data.Key, data.Port); err != nil {
+			log.Error(err)
+			cancel()
+		}
+	}
+	return nil
 }
 
 func getParameters() (int, string, error) {

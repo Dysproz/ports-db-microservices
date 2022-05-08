@@ -1,6 +1,6 @@
 syntax = "proto3";
-option go_package = "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol";
-package portsprotocol;
+package domain;
+option go_package = "github.com/Dysproz/ports-db-microservices/internal/core/domain";
 
 message Port {
     string name = 1;
@@ -28,9 +28,4 @@ message GetPortRequest {
 
 message GetPortResponse {
     Port port = 1;
-}
-
-service PortService {
-  rpc CreateOrUpdatePort(CreateOrUpdatePortRequest) returns (CreateOrUpdatePortResponse) {}
-  rpc GetPort(GetPortRequest) returns (GetPortResponse) {}
 }
