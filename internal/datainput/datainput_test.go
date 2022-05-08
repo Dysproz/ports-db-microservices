@@ -1,4 +1,4 @@
-package jsonparser_test
+package datainput_test
 
 import (
 	"os"
@@ -7,12 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Dysproz/ports-db-microservices/pkg/jsonparser"
-	pb "github.com/Dysproz/ports-db-microservices/pkg/portsprotocol"
+	"github.com/Dysproz/ports-db-microservices/internal/core/domain"
+	"github.com/Dysproz/ports-db-microservices/internal/datainput"
 )
 
 func TestStreamReading(t *testing.T) {
-	stream := jsonparser.NewJSONStream()
+	stream := datainput.NewStream()
 	go func() {
 		for data := range stream.Watch() {
 			require.NoError(t, data.Error)
@@ -20,11 +20,11 @@ func TestStreamReading(t *testing.T) {
 		}
 	}()
 	pwd, _ := os.Getwd()
-	stream.Start(pwd + "/testfiles/test+ports.json")
+	stream.Load(pwd + "/testfiles/test_ports.json")
 }
 
-var testPorts = map[string]pb.Port{
-	"AEAJM": pb.Port{
+var testPorts = map[string]domain.Port{
+	"AEAJM": {
 		Name:    "Ajman",
 		City:    "Ajman",
 		Country: "United Arab Emirates",
@@ -41,7 +41,7 @@ var testPorts = map[string]pb.Port{
 		},
 		Code: "52000",
 	},
-	"AEAUH": pb.Port{
+	"AEAUH": {
 		Name:    "Abu Dhabi",
 		City:    "Abu Dhabi",
 		Country: "United Arab Emirates",
@@ -58,7 +58,7 @@ var testPorts = map[string]pb.Port{
 		},
 		Code: "52001",
 	},
-	"AEDXB": pb.Port{
+	"AEDXB": {
 		Name:    "Dubai",
 		City:    "Dubai",
 		Country: "United Arab Emirates",

@@ -4,6 +4,9 @@
 - docker (tested on 20.10.13)
 - docker-compose (tested on v2.3.3)
 - curl (tested on 7.79.1)
+- protobuf (`brew install protobuf`)
+- protoc-gen-go (`brew install protoc-gen-go`)
+- protoc-gen-go-grpc (`brew install protoc-gen-go-grpc`)
 
 ## Idea
 Project contains two microservices made with Go.
@@ -16,6 +19,17 @@ portDomainService handles gRPC requests from clientAPI and make requests to mong
 ![architecture](images/architecture.png)
 ![flow](images/flow.png)
 
+Hexagonal architecture of microservices:
+![hex-architecture](images/hex-architecture.png)
+**NOTE:** Hexagonal architecture made as described in [this](https://medium.com/@matiasvarela/hexagonal-architecture-in-go-cfd4e436faa3) article.
+
+## Protoc generate
+```
+protoc --go_out=. --go_opt=module=github.com/Dysproz/ports-db-microservices --go-grpc_out=. --go-grpc_opt=module=github.com/Dysproz/ports-db-microservices *.proto
+```
+
+or simply
+`make protogen`
 
 ## Build the containers
 docker-compose builds clientAPI and portDomainService containers from Go code packages.
@@ -29,6 +43,9 @@ docker-compose creates a clientAPI, portDomainService and mongoDB containers tha
 
 `docker-compose up`
 
+or simply
+`make up`
+
 **NOTE:** When editing the code add `--force-recreate` flag to make sure that docker-compose uses the latest version of containers
 
 or simply:
@@ -39,7 +56,13 @@ This command is an example of using clientAPI REST API for loading ports data fr
 
 `curl -F file=@ports.json 'http://127.0.0.1:8000/loadPorts'`
 
+or simply:
+`make loda-ports`
+
 ## Getting port via REST interface
 This command is an example of gathering port data using clientAPI REST API. (`ZWUTA` is an example key from ports.json test file attached in this repo. Feel free to use any other key.)
 
 `curl -X POST -H "Content-Type: application/json" -d '{"key": "ZWUTA"}'  'http://127.0.0.1:8000/getPort'`
+
+or simply
+`make get key=ZWUTA`
